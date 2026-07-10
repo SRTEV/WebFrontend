@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import MapComponent from './MapComponent';
 import '../App.css'; 
 
 
@@ -59,7 +60,7 @@ export default function Dashboard() {
       </nav>
 
       <main className="map-area">
-        <h1>Dashboard Map Placeholder</h1>
+        <MapComponent /> 
       </main>
     </div>
   );

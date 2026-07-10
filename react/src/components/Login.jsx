@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import backgroundImage from '../assets/background.svg';
 import '../App.css';
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +17,7 @@ export default function Login() {
 
     // Send login request to the backend
     try {
-      const response = await fetch('http://localhost:5194/api/User/login', {
+      const response = await fetch(`${BASE_URL}/User/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

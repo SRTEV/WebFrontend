@@ -91,7 +91,6 @@ body {
   position: relative;
 }
 
-
 /* Map area stretches to fill available space */
 .map-area {
   flex: 1;
@@ -101,7 +100,6 @@ body {
   justify-content: center;
   width: 100%;
 }
-
 
 /* Sidebar overlaying the map */
 .sidebar {
@@ -114,7 +112,10 @@ body {
   transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1), background-color 0.4s ease; 
   display: flex;
   flex-direction: column;
-  z-index: 10;
+  
+  /* ВИПРАВЛЕНО: Робимо шар меню вищим за карту Leaflet */
+  z-index: 9999; 
+  
   overflow: hidden; 
   white-space: nowrap; 
 }
@@ -129,7 +130,6 @@ body {
   box-shadow: none;
 }
 
-
 /* Header area with greeting text and hamburger button */
 .sidebar-header {
   display: flex;
@@ -140,7 +140,6 @@ body {
   height: 70px;
   gap: 15px;
 }
-
 
 /* Hamburger button (square trigger) */
 .hamburger-btn {
@@ -154,9 +153,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 20;
+  z-index: 10000;
 }
-
 
 /* Greeting text animation */
 .sidebar-greeting {
@@ -170,7 +168,6 @@ body {
   opacity: 0; 
   pointer-events: none; 
 }
-
 
 /* Navigation buttons */
 .menu-nav {
@@ -207,7 +204,6 @@ body {
 .nav-btn:hover {
   background-color: #333;
 }
-
 
 /* Logout button positioned at the bottom */
 .logout-btn {
