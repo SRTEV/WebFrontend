@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import MapComponent from './MapComponent';
+import UsersList from './UsersList';
+import VehicleList from './VehicleList';
 import '../App.css'; 
-
 
 export default function Dashboard() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [userName, setUserName] = useState('');
+  
+  const location = useLocation();
+  const isMapRoute = location.pathname === '/dashboard' || location.pathname === '/dashboard/';
 
-    // Fetch the userName from localStorage when the component mounts
   useEffect(() => {
     const storedName = localStorage.getItem('userName');
     if (storedName) {
@@ -16,8 +20,13 @@ export default function Dashboard() {
       setUserName('Admin');
     }
   }, []);
+
+  useEffect(() => {
+    if (!isMapRoute) {
+      setIsSidebarOpen(true);
+    }
+  }, [isMapRoute]);
     
-  //remove token and userName from localStorage and redirect to login page
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userName');
@@ -29,29 +38,41 @@ export default function Dashboard() {
       <nav className={`sidebar ${isSidebarOpen ? 'open' : 'closed'}`}>
         
         <div className="sidebar-header">
-          <button 
-            className="hamburger-btn" 
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          >
-            ☰
-          </button>
+          {isMapRoute && (
+            <button 
+              className="hamburger-btn" 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              title="Toggle Menu"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
+          )}
           
-          <span className="sidebar-greeting">Hi, {userName} !</span>
+          <span className="sidebar-greeting" style={{ marginLeft: isMapRoute ? '0' : '15px' }}>
+            Hi, {userName} !
+          </span>
         </div>
 
         <div className="menu-nav">
-          <button className="nav-btn">
+          <Link to="/dashboard" className="nav-btn">
+            <span>🗺️</span> <span className="nav-text">Map</span>
+          </Link>
+          <Link to="/dashboard/users" className="nav-btn">
             <span>👤</span> <span className="nav-text">Users</span>
-          </button>
-          <button className="nav-btn">
+          </Link>
+          <Link to="/dashboard/vehicle" className="nav-btn">
             <span>🛴</span> <span className="nav-text">Vehicle</span>
-          </button>
-          <button className="nav-btn">
+          </Link>
+          <Link to="/dashboard/operation-center" className="nav-btn">
             <span>🎧</span> <span className="nav-text">Operation Center</span>
-          </button>
-          <button className="nav-btn">
+          </Link>
+          <Link to="/dashboard/challenges" className="nav-btn">
             <span>🏆</span> <span className="nav-text">Challenges</span>
-          </button>
+          </Link>
         </div>
         
         <button className="logout-btn" onClick={handleLogout}>
@@ -60,7 +81,13 @@ export default function Dashboard() {
       </nav>
 
       <main className="map-area">
-        <MapComponent /> 
+        <Routes>
+          <Route index element={<MapComponent />} />
+          <Route path="users" element={<UsersList />} />
+          <Route path="vehicle" element={<VehicleList />} />
+          <Route path="operation-center" element={<div style={{padding:20}}>Operation Center placeholder</div>} />
+          <Route path="challenges" element={<div style={{padding:20}}>Challenges placeholder</div>} />
+        </Routes>
       </main>
     </div>
   );
