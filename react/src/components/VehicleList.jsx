@@ -18,7 +18,6 @@ const VEHICLE_STATUSES = [
 ];
 
 export default function VehicleList() {
-    // State
     const [vehicles, setVehicles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
@@ -50,7 +49,6 @@ export default function VehicleList() {
         description: ''
     });
 
-    // Load data
     const fetchVehicles = () => {
         fetch(`${BASE_URL}/Vehicle`)
             .then((res) => res.json())
@@ -70,12 +68,10 @@ export default function VehicleList() {
         return () => clearInterval(intervalId);
     }, []);
 
-    // Filter updates
     const toggleFilter = (key) => {
         setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
     };
 
-    // Filtered list
     const filteredVehicles = vehicles.filter((vehicle) => {
         const rawTypeName = (vehicle.vehicleType?.name || vehicle.VehicleType?.name || vehicle.type || '').toLowerCase();
         const statusText = (vehicle.vehicleStatus?.name || vehicle.VehicleStatus?.name || vehicle.status || '').toLowerCase();
@@ -129,7 +125,6 @@ export default function VehicleList() {
         }
     };
 
-    // Open add form
     const handleAddClick = () => {
         setIsEditMode(false);
         setFormData({
@@ -145,7 +140,6 @@ export default function VehicleList() {
         setIsFormOpen(true);
     };
 
-    // Open edit form
     const handleEditClick = (vehicle) => {
         setIsEditMode(true);
         setFormData({
@@ -161,7 +155,6 @@ export default function VehicleList() {
         setIsFormOpen(true);
     };
 
-    // Delete vehicle
     const handleDeleteClick = (id) => {
         if (window.confirm("Are you sure you want to delete this vehicle?")) {
             fetch(`${BASE_URL}/Vehicle/${id}`, { method: 'DELETE' })
@@ -225,13 +218,44 @@ export default function VehicleList() {
 
     const handleRepairSubmit = (e) => {
         e.preventDefault();
-        alert(`Repairman called for ${repairData.type} with QR: ${repairData.qrCode}`);
-        setIsRepairFormOpen(false);
+
+        const targetVehicle = vehicles.find(v => (v.qrCode || v.QrCode) === repairData.qrCode);
+        
+        if (!targetVehicle) {
+            alert("Vehicle not found!");
+            return;
+        }
+
+        const payload = {
+            email: "admin@transport.com",
+            type: "Repairman",
+            text: repairData.description,
+            status: "Pending",
+            vehicleId: targetVehicle.id || targetVehicle.Id
+        };
+
+        fetch(`${BASE_URL}/Report`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then((res) => {
+            if (res.ok) {
+                alert(`Report successfully sent to repairman for QR: ${repairData.qrCode}`);
+                setIsRepairFormOpen(false);
+                setRepairData({ type: 'Scooter', qrCode: '', description: '' });
+            } else {
+                alert("Failed to send repair report.");
+            }
+        })
+        .catch((err) => {
+            console.error("Repair submit error:", err);
+            alert("Network error. Failed to send.");
+        });
     };
 
     if (loading) return <div className="loading-state">Loading vehicles...</div>;
 
-    // Edit form
     if (isFormOpen) {
         const currentType = VEHICLE_TYPES.find(t => t.id === parseInt(formData.vehicleTypeId));
         const currentIcon = currentType ? currentType.icon : '🚲';
@@ -325,7 +349,6 @@ export default function VehicleList() {
         );
     }
 
-    // Main view
     return (
         <div className="operation-center" style={{ backgroundImage: `url(${backgroundImage})` }}>
             <div className="content-container-box">
