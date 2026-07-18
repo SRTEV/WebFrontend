@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import MapComponent from './MapComponent';
 import UsersList from './UsersList';
 import VehicleList from './VehicleList';
+import OperationCenter from './OperationCenter';
 import '../App.css'; 
 
 export default function Dashboard() {
@@ -85,7 +86,7 @@ export default function Dashboard() {
           <Route index element={<MapComponent />} />
           <Route path="users" element={<UsersList />} />
           <Route path="vehicle" element={<VehicleList />} />
-          <Route path="operation-center" element={<div style={{padding:20}}>Operation Center placeholder</div>} />
+          <Route path="operation-center" element={<OperationCenter />} />
           <Route path="challenges" element={<div style={{padding:20}}>Challenges placeholder</div>} />
         </Routes>
       </main>
