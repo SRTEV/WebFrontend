@@ -36,11 +36,6 @@ export default function UsersList() {
 
     const fetchUsers = () => {
         const token = localStorage.getItem('token');
-        if (!token) {
-            setError("Authorization required. Please sign in first.");
-            setLoading(false);
-            return;
-        }
 
         fetch(`${BASE_URL}/User`, {
             method: 'GET',
