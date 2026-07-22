@@ -4,6 +4,7 @@ import MapComponent from './MapComponent';
 import UsersList from './UsersList';
 import VehicleList from './VehicleList';
 import OperationCenter from './OperationCenter';
+import ChallengesList from './ChallengesList';
 import '../App.css'; 
 
 export default function Dashboard() {
@@ -87,7 +88,7 @@ export default function Dashboard() {
           <Route path="users" element={<UsersList />} />
           <Route path="vehicle" element={<VehicleList />} />
           <Route path="operation-center" element={<OperationCenter />} />
-          <Route path="challenges" element={<div style={{padding:20}}>Challenges placeholder</div>} />
+          <Route path="challenges" element={<ChallengesList />} />
         </Routes>
       </main>
     </div>

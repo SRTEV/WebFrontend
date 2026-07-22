@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../App.css';
 import backgroundImage from '../assets/background.svg';
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { apiFetch } from '../api';
 
 const VEHICLE_TYPES = [
     { id: 1, name: 'Scooter', icon: '🛴' },
@@ -50,14 +49,19 @@ export default function VehicleList() {
     });
 
     const fetchVehicles = () => {
-        fetch(`${BASE_URL}/Vehicle`)
-            .then((res) => res.json())
+        apiFetch('/Vehicle')
+            .then((res) => {
+                if (!res.ok) throw new Error(`Failed to fetch vehicles (${res.status})`);
+                return res.json();
+            })
             .then((data) => {
                 setVehicles(data);
                 setLoading(false);
             })
             .catch((error) => {
-                console.error("Failed to fetch vehicles:", error);
+                if (error.message !== 'Unauthorized') {
+                    console.error("Failed to fetch vehicles:", error);
+                }
                 setLoading(false);
             });
     };
@@ -157,7 +161,7 @@ export default function VehicleList() {
 
     const handleDeleteClick = (id) => {
         if (window.confirm("Are you sure you want to delete this vehicle?")) {
-            fetch(`${BASE_URL}/Vehicle/${id}`, { method: 'DELETE' })
+            apiFetch(`/Vehicle/${id}`, { method: 'DELETE' })
             .then((res) => {
                 if (res.ok) {
                     setVehicles(prev => prev.filter(v => v.id !== id));
@@ -165,7 +169,11 @@ export default function VehicleList() {
                     alert("Failed to delete vehicle.");
                 }
             })
-            .catch((err) => console.error("Delete error:", err));
+            .catch((err) => {
+                if (err.message !== 'Unauthorized') {
+                    console.error("Delete error:", err);
+                }
+            });
         }
     };
 
@@ -183,12 +191,11 @@ export default function VehicleList() {
             PositionY: parseFloat(formData.positionY) || 22.548
         };
 
-        const url = isEditMode ? `${BASE_URL}/Vehicle/${formData.id}` : `${BASE_URL}/Vehicle`;
+        const endpoint = isEditMode ? `/Vehicle/${formData.id}` : '/Vehicle';
         const method = isEditMode ? 'PUT' : 'POST';
 
-        fetch(url, {
+        apiFetch(endpoint, {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
         .then((res) => {
@@ -199,7 +206,11 @@ export default function VehicleList() {
                 alert("Something went wrong while saving.");
             }
         })
-        .catch((err) => alert("Network error. Failed to save."));
+        .catch((err) => {
+            if (err.message !== 'Unauthorized') {
+                alert("Network error. Failed to save.");
+            }
+        });
     };
 
     const handleCallRepairmanClick = (vehicle) => {
@@ -234,9 +245,8 @@ export default function VehicleList() {
             vehicleId: targetVehicle.id || targetVehicle.Id
         };
 
-        fetch(`${BASE_URL}/Report`, {
+        apiFetch('/Report', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         })
         .then((res) => {
@@ -249,8 +259,10 @@ export default function VehicleList() {
             }
         })
         .catch((err) => {
-            console.error("Repair submit error:", err);
-            alert("Network error. Failed to send.");
+            if (err.message !== 'Unauthorized') {
+                console.error("Repair submit error:", err);
+                alert("Network error. Failed to send.");
+            }
         });
     };
 

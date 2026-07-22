@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import Map, { Marker } from 'react-map-gl';
 import mapboxgl from 'mapbox-gl'; 
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { apiFetch } from '../api';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 mapboxgl.config.TRACK_RESIZE_EVENTS = false;
 
@@ -23,14 +23,19 @@ export default function MapComponent() {
 
     useEffect(() => {
         const fetchVehicles = () => {
-            fetch(`${BASE_URL}/Vehicle`) 
-                .then((response) => response.json())
+            apiFetch('/Vehicle') 
+                .then((response) => {
+                    if (!response.ok) throw new Error(`Failed to load vehicles (${response.status})`);
+                    return response.json();
+                })
                 .then((data) => {
                     setVehicles(data);
                     setLoading(false);
                 })
                 .catch((error) => {
-                    console.error(error);
+                    if (error.message !== 'Unauthorized') {
+                        console.error("Error fetching vehicles:", error);
+                    }
                     setLoading(false);
                 });
         };
@@ -179,21 +184,21 @@ export default function MapComponent() {
                         width: '100%', 
                         height: '100%', 
                         zIndex: 100, 
-                        background: 'rgba(0, 0, 0, 0.4)', // Screen dimming
+                        background: 'rgba(0, 0, 0, 0.4)',
                         backdropFilter: 'blur(5px)',
                         WebkitBackdropFilter: 'blur(5px)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                     }}
-                    onClick={() => setIsRepairFormOpen(false)} // Close on outside click
+                    onClick={() => setIsRepairFormOpen(false)}
                 >
                     <div 
                         className="modal-container-box" 
                         style={{ 
                             position: 'relative',
-                            background: '#e0e0e0', // Light card background
-                            borderRadius: '28px', // Rounded corners
+                            background: '#e0e0e0',
+                            borderRadius: '28px',
                             padding: '35px 30px',
                             width: '90%',
                             maxWidth: '480px',
@@ -201,7 +206,7 @@ export default function MapComponent() {
                             color: '#000',
                             fontFamily: 'sans-serif'
                         }}
-                        onClick={(e) => e.stopPropagation()} // Keep open on inside click
+                        onClick={(e) => e.stopPropagation()}
                     >
                         <button 
                             type="button"

@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../App.css';
 import backgroundImage from '../assets/background.svg';
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { apiFetch } from '../api';
 
 export default function OperationCenter() {
   // State
@@ -32,22 +31,8 @@ export default function OperationCenter() {
   }, []);
 
   const fetchReports = () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setError("Authorization required. Please sign in first.");
-      setLoading(false);
-      return;
-    }
-
-    fetch(`${BASE_URL}/Report`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
-    })
+    apiFetch('/Report')
       .then((res) => {
-        if (res.status === 401) throw new Error("Unauthorized access (401).");
         if (!res.ok) throw new Error(`Failed to load reports (Status: ${res.status})`);
         return res.json();
       })
@@ -57,7 +42,9 @@ export default function OperationCenter() {
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message);
+        if (err.message !== 'Unauthorized') {
+          setError(err.message);
+        }
         setLoading(false);
       });
   };
@@ -120,15 +107,10 @@ export default function OperationCenter() {
     }
 
     setIsSending(true);
-    const token = localStorage.getItem('token');
 
     try {
-      const response = await fetch(`${BASE_URL}/Report/${reportId}/reply`, {
+      const response = await apiFetch(`/Report/${reportId}/reply`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           email: recipientEmail,
           message: replyMessage
@@ -144,7 +126,9 @@ export default function OperationCenter() {
       handleCloseReplyModal();
       fetchReports();
     } catch (err) {
-      alert(`Error sending reply: ${err.message}`);
+      if (err.message !== 'Unauthorized') {
+        alert(`Error sending reply: ${err.message}`);
+      }
     } finally {
       setIsSending(false);
     }

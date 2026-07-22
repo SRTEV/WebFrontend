@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../App.css';
 import backgroundImage from '../assets/background.svg';
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import { apiFetch } from '../api';
 
 export default function UsersList() {
     const [users, setUsers] = useState([]);
@@ -22,7 +21,7 @@ export default function UsersList() {
     // Modal state
     const [modalConfig, setModalConfig] = useState({
         isOpen: false,
-        type: null, // 'block', 'unblock', 'changeStatus'
+        type: null,
         user: null
     });
     const [blockReason, setBlockReason] = useState('Incorrect use of the scooter');
@@ -35,28 +34,20 @@ export default function UsersList() {
     }, []);
 
     const fetchUsers = () => {
-        const token = localStorage.getItem('token');
-
-        fetch(`${BASE_URL}/User`, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        })
+        apiFetch('/User')
             .then((res) => {
-                if (res.status === 401) throw new Error("Unauthorized access (401). Please sign in again.");
                 if (!res.ok) throw new Error(`Failed to load users (Status: ${res.status})`);
                 return res.json();
             })
             .then((data) => {
-                // Extra filtering in case the backend still returns deleted users
                 setUsers(data.filter(u => !u.deleted));
                 setError('');
                 setLoading(false);
             })
             .catch((err) => {
-                setError(err.message);
+                if (err.message !== 'Unauthorized') {
+                    setError(err.message);
+                }
                 setLoading(false);
             });
     };
@@ -82,14 +73,9 @@ export default function UsersList() {
 
     // Block user
     const handleBlock = async () => {
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`${BASE_URL}/User/Block/${modalConfig.user.id}`, {
+            const res = await apiFetch(`/User/Block/${modalConfig.user.id}`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({ reason: blockReason })
             });
             
@@ -104,14 +90,9 @@ export default function UsersList() {
 
     // Unblock user
     const handleUnblock = async () => {
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`${BASE_URL}/User/Unblock/${modalConfig.user.id}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+            const res = await apiFetch(`/User/Unblock/${modalConfig.user.id}`, {
+                method: 'POST'
             });
             
             if (res.ok) {
@@ -126,15 +107,12 @@ export default function UsersList() {
     // Soft delete
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this user?")) return;
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`${BASE_URL}/User/Delete/${id}`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` }
+            const res = await apiFetch(`/User/Delete/${id}`, {
+                method: 'POST'
             });
             
             if (res.ok) {
-                // Remove the user from the current state so they disappear immediately
                 setUsers(users.filter(u => u.id !== id));
             }
         } catch (err) {
@@ -144,19 +122,13 @@ export default function UsersList() {
 
     // Change role
     const handleChangeStatus = async () => {
-        const token = localStorage.getItem('token');
         try {
-            const res = await fetch(`${BASE_URL}/User/ChangeRole/${modalConfig.user.id}`, {
+            const res = await apiFetch(`/User/ChangeRole/${modalConfig.user.id}`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
                 body: JSON.stringify({ roleName: selectedRole })
             });
             
             if (res.ok) {
-                // Update only the role as intended
                 setUsers(users.map(u => u.id === modalConfig.user.id ? { 
                     ...u, 
                     role: { ...u.role, roleName: selectedRole } 
