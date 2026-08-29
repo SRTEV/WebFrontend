@@ -8,7 +8,6 @@ export default function UsersList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // UI state: search and filters
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState({
         User: true,
@@ -18,7 +17,6 @@ export default function UsersList() {
     });
     const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
 
-    // Modal state
     const [modalConfig, setModalConfig] = useState({
         isOpen: false,
         type: null,
@@ -71,7 +69,6 @@ export default function UsersList() {
         setModalConfig({ isOpen: false, type: null, user: null });
     };
 
-    // Block user
     const handleBlock = async () => {
         try {
             const res = await apiFetch(`/User/Block/${modalConfig.user.id}`, {
@@ -88,7 +85,6 @@ export default function UsersList() {
         }
     };
 
-    // Unblock user
     const handleUnblock = async () => {
         try {
             const res = await apiFetch(`/User/Unblock/${modalConfig.user.id}`, {
@@ -104,7 +100,6 @@ export default function UsersList() {
         }
     };
 
-    // Soft delete
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this user?")) return;
         try {
@@ -120,7 +115,6 @@ export default function UsersList() {
         }
     };
 
-    // Change role
     const handleChangeStatus = async () => {
         try {
             const res = await apiFetch(`/User/ChangeRole/${modalConfig.user.id}`, {
@@ -162,18 +156,20 @@ export default function UsersList() {
         <div className="operation-center" style={{ backgroundImage: `url(${backgroundImage})` }}>
             <div className="content-wrapper" style={{ position: 'relative' }}>
                 
+                {/* Search input for finding users */}
                 <div className="search-bar-container">
                     <span className="search-icon">🔍</span>
                     <input
                         type="text"
                         className="search-input"
-                        placeholder="Search by email"
+                        placeholder="Search by name or email"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
 
                 <div className="controls-bar">
+                    {/* Filter dropdown menu */}
                     <div className="filter-dropdown">
                         <button className="filter-btn" onClick={() => setIsFilterMenuOpen(!isFilterMenuOpen)}>
                             Filter <span className="arrow-icon">⌄</span>
@@ -194,6 +190,7 @@ export default function UsersList() {
                         )}
                     </div>
 
+                    {/* Statistics overview board */}
                     <div className="stats-board">
                         <span>Total Users : {totalUsers}</span>
                         <span>Active now : {activeCount}</span>
@@ -214,6 +211,9 @@ export default function UsersList() {
                                             <span className={`status-dot ${user.isBlocked ? 'red' : 'green'}`}></span>
                                             <div className="user-text-details">
                                                 <span className="user-name">{user.name}</span>
+                                                <span className="user-email" style={{ fontSize: '0.85em', color: '#666', marginTop: '2px', display: 'block' }}>
+                                                    {user.email}
+                                                </span>
                                             </div>
                                         </div>
 
@@ -247,7 +247,7 @@ export default function UsersList() {
                         })}
                     </div>
 
-                    {/* Modal windows */}
+                    {/* Action modals handling block, unblock, and status change */}
                     {modalConfig.isOpen && (
                         <div className="custom-modal-overlay">
                             <div className="custom-modal">

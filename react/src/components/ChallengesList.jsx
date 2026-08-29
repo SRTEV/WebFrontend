@@ -42,12 +42,10 @@ export default function ChallengesList() {
 
   const fetchInitialData = async () => {
     try {
-      // 1. Завантажуємо типи транспорту
       const vRes = await apiFetch('/VehicleType');
       let vData = [];
       if (vRes.ok) {
         const rawVData = await vRes.json();
-        // Прибираємо дублікати за назвою, щоб не було повторів типу Bike та Bicycle одночасно
         const seenNames = new Set();
         vData = rawVData.filter(v => {
           const name = v.name || v.Name;
@@ -62,7 +60,6 @@ export default function ChallengesList() {
         }
       }
 
-      // 2. Завантажуємо челенджі
       const cRes = await apiFetch('/Competition');
       if (cRes.ok) {
         const cData = await cRes.json();
@@ -228,7 +225,7 @@ export default function ChallengesList() {
     <div className="operation-center" style={{ backgroundImage: `url(${backgroundImage})`, minHeight: '100vh', backgroundSize: 'cover' }}>
       <div className="content-container-box">
         
-        {/* Унікальні вкладки транспорту */}
+        {/* Vehicle filter tabs */}
         <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '25px' }}>
           {displayVehicleTabs.map((tab) => (
             <button
@@ -250,7 +247,7 @@ export default function ChallengesList() {
           ))}
         </div>
 
-        {/* Список челенджів */}
+        {/* Challenges list display */}
         <div className="vehicles-list-wrapper" style={{ backgroundColor: '#d9d9d9', minHeight: '500px', borderRadius: '16px', padding: '25px' }}>
           {filteredCompetitions.length === 0 ? (
             <div style={{ textAlign: 'center', color: '#555', padding: '40px', fontWeight: 'bold', fontSize: '18px' }}>
@@ -312,7 +309,7 @@ export default function ChallengesList() {
 
       <button className="fab-add-btn" onClick={handleAddClick}>+</button>
 
-      {/* Модальне вікно */}
+      {/* Challenge creation/edit modal */}
       {isModalOpen && (
         <div 
           className="modal-overlay" 
@@ -347,7 +344,6 @@ export default function ChallengesList() {
             }}
           >
             
-            {/* Header: Arrow + Title */}
             <div style={{ display: 'flex', alignItems: 'center', marginBottom: '22px', position: 'relative', justifyContent: 'center' }}>
               <button
                 type="button"
@@ -375,7 +371,7 @@ export default function ChallengesList() {
               </h2>
             </div>
 
-            {/* Vehicle Tabs всередині модалки */}
+            {/* Modal vehicle type selectors */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '22px' }}>
               {vehicleTypes.map((vt) => {
                 const vId = vt.id || vt.Id;
@@ -403,13 +399,11 @@ export default function ChallengesList() {
               })}
             </div>
 
-            {/* Внутрішній сірий контейнер */}
             <div style={{ backgroundColor: '#c4c4c4', borderRadius: '22px', padding: '24px 28px', marginBottom: '24px', border: '1px solid #999' }}>
               <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '18px', color: '#000', textAlign: 'left' }}>
                 Enter the essence of the challenge
               </h3>
               
-              {/* Type of Goal & Goal Value Row */}
               <div style={{ display: 'flex', gap: '30px', marginBottom: '22px' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                   <label style={{ fontWeight: 'bold', color: '#000', fontSize: '14px' }}>Select type of goal</label>
@@ -438,15 +432,12 @@ export default function ChallengesList() {
                 </div>
               </div>
 
-              {/* Award Header */}
               <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px', color: '#000', textAlign: 'center' }}>
                 Award
               </h3>
 
-              {/* Award Rows + Date Picker Container */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
                 
-                {/* Нагороди */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
                   {[
                     { label: '1st', typeKey: 'award1stType', valueKey: 'award1stValue' },
@@ -480,7 +471,7 @@ export default function ChallengesList() {
                   ))}
                 </div>
 
-                {/* Календар дат */}
+                {/* Date range picker section */}
                 <div style={{ border: '1px solid #888', borderRadius: '12px', padding: '16px 20px', backgroundColor: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', width: '210px' }}>
                   <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -510,7 +501,6 @@ export default function ChallengesList() {
               </div>
             </div>
 
-            {/* Кнопка Save */}
             <div style={{ textAlign: 'center' }}>
               <button
                 type="submit"
