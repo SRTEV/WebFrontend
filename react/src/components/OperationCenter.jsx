@@ -57,7 +57,7 @@ export default function OperationCenter() {
   // Filtered reports
   const filteredReports = reports.filter((report) => {
     const rType = report.type || report.Type;
-    const isRepairmanReport = rType === 'Repairman problem' || (report.user && report.user.roleID === 3);
+    const isRepairmanReport = rType === 'Repairman' || (report.user && report.user.roleID === 3);
     const matchesTab = activeTab === 'Repairman' ? isRepairmanReport : !isRepairmanReport;
 
     const q = searchQuery.trim().toLowerCase();

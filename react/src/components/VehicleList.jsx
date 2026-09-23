@@ -239,7 +239,7 @@ export default function VehicleList() {
 
         const payload = {
             email: "admin@transport.com",
-            type: "Repairman",
+            type: "Admin Calls",
             text: repairData.description,
             status: "Pending",
             vehicleId: targetVehicle.id || targetVehicle.Id
