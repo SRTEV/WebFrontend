@@ -183,11 +183,56 @@ export default function MapComponent() {
         setIsRepairFormOpen(true);
     };
 
-    const handleRepairSubmit = (e) => {
+    const handleRepairSubmit = async (e) => {
         e.preventDefault();
-        console.log("Repair call sent:", repairData);
-        alert(`Repairman called successfully for ${repairData.type} (${repairData.qrCode})`);
-        setIsRepairFormOpen(false);
+
+        // Пошук транспортного засобу за вибраним QR-кодом
+        const targetVehicle = vehicles.find(
+            v => (v.qrCode || v.QrCode) === repairData.qrCode
+        ) || selectedVehicle;
+
+        const targetVehicleId = targetVehicle ? (targetVehicle.id || targetVehicle.ID) : null;
+
+        // Беремо email та userId із localStorage
+        const userEmail = localStorage.getItem('userEmail') || localStorage.getItem('email') || 'admin@transport.com';
+        const rawUserId = localStorage.getItem('userId');
+        const userId = rawUserId ? parseInt(rawUserId, 10) : null;
+
+        try {
+            const response = await apiFetch('/Report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    Email: userEmail,
+                    email: userEmail,
+                    Type: 'Admin Calls',
+                    type: 'Admin Calls',
+                    Text: repairData.description,
+                    text: repairData.description,
+                    VehicleId: targetVehicleId,
+                    vehicleId: targetVehicleId,
+                    VehicleID: targetVehicleId,
+                    UserId: userId,      // Додано UserId
+                    userId: userId,      // Додано userId
+                    UserID: userId       // Для сумісності з різними іменуваннями C# DTO
+                })
+            });
+
+            if (response.ok) {
+                alert(`Repairman called successfully for ${repairData.type} (${repairData.qrCode})`);
+                setIsRepairFormOpen(false);
+                setRepairData({ type: 'Monowheel', qrCode: '', description: '' });
+            } else {
+                const errorData = await response.json().catch(() => null);
+                const errorMsg = errorData ? (errorData.message || errorData.title || JSON.stringify(errorData)) : response.statusText;
+                alert(`Error sending report: ${errorMsg}`);
+            }
+        } catch (error) {
+            console.error("Error submitting repair call:", error);
+            alert("Failed to send repair call. Please check your connection.");
+        }
     };
 
     if (loading) {

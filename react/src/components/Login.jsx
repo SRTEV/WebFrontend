@@ -29,8 +29,8 @@ export default function Login() {
 
       localStorage.setItem('token', data.token); 
       localStorage.setItem('userName', data.name);
+      localStorage.setItem('userId', data.userId);
       
-      // Redirect to the dashboard after successful login
       navigate('/dashboard');
     } catch (err) {
       setError(err.message);

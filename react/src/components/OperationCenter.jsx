@@ -21,6 +21,7 @@ export default function OperationCenter() {
     'Problem with vehicles': true,
     'Payment issue': true,
     'Problem with account': true,
+    'Repairman problem': true,
     'Other': true
   });
 
@@ -54,10 +55,14 @@ export default function OperationCenter() {
     setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Filtered reports
   const filteredReports = reports.filter((report) => {
     const rType = report.type || report.Type;
-    const isRepairmanReport = rType === 'Repairman' || (report.user && report.user.roleID === 3);
+
+    if (rType === 'Admin Calls') {
+      return false;
+    }
+
+    const isRepairmanReport = rType === 'Repairman';
     const matchesTab = activeTab === 'Repairman' ? isRepairmanReport : !isRepairmanReport;
 
     const q = searchQuery.trim().toLowerCase();

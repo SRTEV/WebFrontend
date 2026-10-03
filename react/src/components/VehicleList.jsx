@@ -129,6 +129,46 @@ export default function VehicleList() {
         }
     };
 
+    const getStoredUserData = () => {
+        let userId = localStorage.getItem('userId') || localStorage.getItem('id') || localStorage.getItem('UserId');
+        let email = localStorage.getItem('userEmail') || localStorage.getItem('email') || localStorage.getItem('Email');
+
+        if (!userId || !email) {
+            try {
+                const rawUser = localStorage.getItem('user') || localStorage.getItem('userData') || localStorage.getItem('currentUser');
+                if (rawUser) {
+                    const parsed = JSON.parse(rawUser);
+                    if (!userId) userId = parsed.id || parsed.userId || parsed.Id || parsed.UserId;
+                    if (!email) email = parsed.email || parsed.Email || parsed.userEmail;
+                }
+            } catch (e) {
+                console.error("Error parsing user object from localStorage", e);
+            }
+        }
+
+        if (!userId || !email) {
+            try {
+                const token = localStorage.getItem('token') || localStorage.getItem('jwt') || localStorage.getItem('accessToken');
+                if (token) {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => '%' + ('0' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+                    const parsedToken = JSON.parse(jsonPayload);
+                    if (!userId) userId = parsedToken.nameid || parsedToken.sub || parsedToken.userId || parsedToken.id || parsedToken.UserId;
+                    if (!email) email = parsedToken.email || parsedToken.Email || parsedToken['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'];
+                }
+            } catch (e) {
+                console.error("Error parsing JWT token", e);
+            }
+        }
+
+        const parsedId = userId ? parseInt(userId, 10) : null;
+        return {
+            userId: !isNaN(parsedId) ? parsedId : null,
+            email: email || 'admin@transport.com'
+        };
+    };
+
     const handleAddClick = () => {
         setIsEditMode(false);
         setFormData({
@@ -181,14 +221,14 @@ export default function VehicleList() {
         e.preventDefault();
 
         const payload = {
-            Id: isEditMode ? parseInt(formData.id, 10) : 0,
-            Model: formData.model, 
-            QrCode: formData.qrCode, 
-            VehicleTypeId: parseInt(formData.vehicleTypeId, 10),
-            VehicleStatusId: parseInt(formData.vehicleStatusId, 10),
-            BatteryLevel: parseInt(formData.batteryLevel, 10),
-            PositionX: parseFloat(formData.positionX) || 51.236,
-            PositionY: parseFloat(formData.positionY) || 22.548
+            id: isEditMode ? parseInt(formData.id, 10) : 0,
+            model: formData.model, 
+            qrCode: formData.qrCode, 
+            vehicleTypeId: parseInt(formData.vehicleTypeId, 10),
+            vehicleStatusId: parseInt(formData.vehicleStatusId, 10),
+            batteryLevel: parseInt(formData.batteryLevel, 10),
+            positionX: parseFloat(formData.positionX) || 51.236,
+            positionY: parseFloat(formData.positionY) || 22.548
         };
 
         const endpoint = isEditMode ? `/Vehicle/${formData.id}` : '/Vehicle';
@@ -196,6 +236,9 @@ export default function VehicleList() {
 
         apiFetch(endpoint, {
             method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(payload)
         })
         .then((res) => {
@@ -237,25 +280,35 @@ export default function VehicleList() {
             return;
         }
 
+        const { userId, email } = getStoredUserData();
+
         const payload = {
-            email: "admin@transport.com",
+            email: email,
             type: "Admin Calls",
             text: repairData.description,
             status: "Pending",
-            vehicleId: targetVehicle.id || targetVehicle.Id
+            vehicleId: targetVehicle.id || targetVehicle.Id,
+            userId: userId
         };
+
+        console.log("Submitting report payload:", payload);
 
         apiFetch('/Report', {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(payload)
         })
-        .then((res) => {
+        .then(async (res) => {
             if (res.ok) {
                 alert(`Report successfully sent to repairman for QR: ${repairData.qrCode}`);
                 setIsRepairFormOpen(false);
                 setRepairData({ type: 'Scooter', qrCode: '', description: '' });
             } else {
-                alert("Failed to send repair report.");
+                const errText = await res.text().catch(() => '');
+                console.error("Server 500 error response text:", errText);
+                alert(`Failed to send repair report (Status ${res.status}). See console for details.`);
             }
         })
         .catch((err) => {
@@ -406,7 +459,6 @@ export default function VehicleList() {
                             const rawTypeName = vehicle.vehicleType?.name || vehicle.VehicleType?.name || vehicle.type || 'Vehicle';
                             const displayTypeName = (rawTypeName.toLowerCase().includes('bike') || rawTypeName.toLowerCase().includes('bicycle')) ? 'Bicycle' : rawTypeName;
                             const statusText = (vehicle.vehicleStatus?.name || vehicle.VehicleStatus?.name || vehicle.status || 'Available');
-                            const isNeedCheck = statusText.toLowerCase() === 'needs to be checked' || statusText.toLowerCase() === 'needcheck';
                             const lng = parseFloat(vehicle.positionX || vehicle.PositionX);
                             const lat = parseFloat(vehicle.positionY || vehicle.PositionY);
                             const locationDisplay = (!isNaN(lat) && !isNaN(lng)) ? `${lat.toFixed(5)}, ${lng.toFixed(5)}` : 'Unknown coordinates';
@@ -429,11 +481,9 @@ export default function VehicleList() {
                                             </div>
                                         </div>
                                         <div className="vehicle-actions-row">
-                                            {isNeedCheck && (
-                                                <button className="action-btn" onClick={() => handleCallRepairmanClick(vehicle)}>
-                                                    <span className="icon">🔨</span> Call repairman
-                                                </button>
-                                            )}
+                                            <button className="action-btn" onClick={() => handleCallRepairmanClick(vehicle)}>
+                                                <span className="icon">🔨</span> Call repairman
+                                            </button>
                                             <button className="action-btn" onClick={() => handleEditClick(vehicle)}>
                                                 <span className="icon">📝</span> Edit
                                             </button>
