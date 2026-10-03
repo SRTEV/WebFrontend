@@ -5,8 +5,8 @@ import { apiFetch } from '../api';
 
 const VEHICLE_TYPES = [
     { id: 1, name: 'Scooter', icon: '🛴' },
-    { id: 2, name: 'Bicycle', icon: '🚲' },
-    { id: 3, name: 'Monowheel', icon: '🛞' }
+    { id: 2, name: 'Monowheel', icon: '🛞' },
+    { id: 3, name: 'Bicycle', icon: '🚲' }
 ];
 
 const VEHICLE_STATUSES = [
@@ -323,7 +323,7 @@ export default function VehicleList() {
 
     if (isFormOpen) {
         const currentType = VEHICLE_TYPES.find(t => t.id === parseInt(formData.vehicleTypeId));
-        const currentIcon = currentType ? currentType.icon : '🚲';
+        const currentIcon = currentType ? currentType.icon : '🛴';
 
         return (
             <div className="form-container-overlay" style={{ backgroundImage: `url(${backgroundImage})` }}>
