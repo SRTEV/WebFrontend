@@ -238,7 +238,7 @@ export default function UsersList() {
                                         <div className="banned-details">
                                             <p>
                                                 User was blocked by administration<br />
-                                                <strong>for {user.blockedReason || "traffic violations related to electric scooter use"}</strong>
+                                                <strong>for {user.blockedReason || "Block reason not specified"}</strong>
                                             </p>
                                         </div>
                                     )}

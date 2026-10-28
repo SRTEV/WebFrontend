@@ -27,6 +27,11 @@ export default function Login() {
 
       if (!response.ok) throw new Error(data.message || 'Login failed');
 
+      if (data.roleId !== 2) {
+        setError('You do not have permission to access the admin panel.');
+        return; 
+      }
+
       localStorage.setItem('token', data.token || data.Token); 
       localStorage.setItem('userName', data.name);
       localStorage.setItem('userId', data.userId);
